@@ -12,10 +12,10 @@
     'use strict';
 
     let blobs = [];
-    let imageHashes = new Set();  // Для отслеживания уникальных хэшей изображений
+    let imageHashes = new Set();  // To keep track of unique image hashes
     let downloadedCount = 0;
 
-    // Функция для вычисления хэша из blob-объекта
+    // Function for calculating hash from blob object
     async function hashBlob(blob) {
         const arrayBuffer = await blob.arrayBuffer();
         const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
@@ -24,7 +24,7 @@
         return hashHex;
     }
 
-    // Функция для сохранения blob объектов как файлов PNG
+    // Function for saving blob objects as PNG files
     function saveBlob(blob, filename) {
         const blobUrl = URL.createObjectURL(blob);
         GM_download({
@@ -34,7 +34,7 @@
         });
     }
 
-    // Функция для поочередной загрузки всех изображений
+    // Function for loading all images one by one
     function downloadSequentially(index) {
         if (index >= blobs.length) {
             alert(`Downloaded all ${blobs.length} images.`);
@@ -50,10 +50,10 @@
 
         setTimeout(() => {
             downloadSequentially(index + 1);
-        }, 1000);  // Задержка в 1 секунду между загрузками
+        }, 1000);  // 1 second delay between loads
     }
 
-    // Функция для загрузки всех blob-изображений
+    // Function for loading all blob images
     function downloadImages() {
         if (blobs.length === 0) {
             alert("No images found. Try scrolling manually and reloading.");
@@ -64,15 +64,15 @@
         downloadSequentially(0);
     }
 
-    // Перехватываем создание blob URL и сохраняем уникальные blob объекты
+    // Intercept blob URL creation and store unique blob objects
     const originalCreateObjectURL = URL.createObjectURL;
     URL.createObjectURL = function(blob) {
         const url = originalCreateObjectURL(blob);
         if (blob.type.startsWith('image/')) {
             hashBlob(blob).then(hash => {
-                if (!imageHashes.has(hash)) {  // Проверка уникальности по хэшу
-                    blobs.push(blob);  // Сохраняем уникальный blob
-                    imageHashes.add(hash);  // Добавляем хэш в set
+                if (!imageHashes.has(hash)) {  // Check uniqueness by hash
+                    blobs.push(blob);  // Save the unique blob
+                    imageHashes.add(hash);  // Add hash to set
                     console.log(`Captured unique image blob: ${url} (hash: ${hash})`);
                 } else {
                     console.log(`Duplicate image blob skipped: ${url} (hash: ${hash})`);
@@ -82,7 +82,7 @@
         return url;
     };
 
-    // Создание кнопки для загрузки
+    // Create a button for loading
     function createDownloadButton() {
         const button = document.createElement('button');
         button.innerText = "Download All Images";
@@ -107,7 +107,7 @@
         });
     }
 
-    // Проверяем готовность страницы и создаем кнопку
+    // Check if the page is ready and create a button
     const interval = setInterval(() => {
         if (document.readyState === "complete") {
             clearInterval(interval);
